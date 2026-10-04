@@ -1,4 +1,4 @@
-# opencode-observability
+# @sergemso/opencode-observability
 
 Per-session sidebar plugin for OpenCode TUI — warming status, cache hit rate, token breakdown, TTL, and cost savings.
 
@@ -25,11 +25,11 @@ Per-session sidebar plugin for OpenCode TUI — warming status, cache hit rate, 
 
 ```bash
 # Via OpenCode command palette (Ctrl+P)
-opencode plugin opencode-observability --global
+opencode plugin @sergemso/opencode-observability --global
 
 # Or manually add to ~/.config/opencode/tui.jsonc
 {
-  "plugin": ["opencode-observability"]
+  "plugin": ["@sergemso/opencode-observability"]
 }
 ```
 
@@ -167,6 +167,8 @@ Point to local build in `~/.config/opencode/tui.jsonc`:
   "plugin": ["file:///absolute/path/to/opencode-observability/src/plugin.tsx"]
 }
 ```
+
+The TUI preferences key remains `opencode-observability` (without scope):
 
 Restart OpenCode TUI after changes.
 
