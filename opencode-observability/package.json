@@ -34,8 +34,17 @@
     "cache",
     "metrics"
   ],
-  "author": "",
+  "author": "sergemso",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sergemso/opencode_ext.git",
+    "directory": "opencode-observability"
+  },
+  "bugs": {
+    "url": "https://github.com/sergemso/opencode_ext/issues"
+  },
+  "homepage": "https://github.com/sergemso/opencode_ext/tree/master/opencode-observability#readme",
   "peerDependencies": {
     "@opencode-ai/plugin": ">=1.14.0",
     "solid-js": ">=1.8.0"
