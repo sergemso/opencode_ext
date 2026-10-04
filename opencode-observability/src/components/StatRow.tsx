@@ -1,21 +1,29 @@
 import { createSignal, createEffect, onCleanup, createMemo, splitProps } from "solid-js"
 
+function resolveColor(color: string, theme: any, fallback: string): string {
+  if (!color) return fallback
+  if (color.startsWith("#") || color.startsWith("rgb") || /^[a-z]+$/i.test(color)) return color
+  return theme?.[color] || fallback
+}
+
 export interface StatRowProps {
   label: string
   value: string
   trend?: "up" | "down" | "stable"
   color?: string
   children?: any
+  theme?: any
 }
 
 export function StatRow(props: StatRowProps) {
-  const [local, rest] = splitProps(props, ["label", "value", "trend", "color", "children"])
+  const [local, rest] = splitProps(props, ["label", "value", "trend", "color", "children", "theme"])
+  const theme = local.theme || {}
   return (
     <box {...rest} flexShrink={0} gap={1} alignItems="center" justifyContent="center">
-      <text fg="textMuted" flexShrink={0}>{local.label}</text>
-      <text fg={local.color || "text"} flexShrink={0}>{local.value}</text>
+      <text fg={resolveColor("textMuted", theme, "#6c7086")} flexShrink={0}>{local.label}</text>
+      <text fg={resolveColor(local.color || "text", theme, "#cdd6f4")} flexShrink={0}>{local.value}</text>
       {local.trend && (
-        <text fg={local.trend === "up" ? "success" : local.trend === "down" ? "error" : "textMuted"}>
+        <text fg={local.trend === "up" ? "success" : local.trend === "down" ? "error" : resolveColor("textMuted", theme, "#6c7086")}>
           {local.trend === "up" ? "↗" : local.trend === "down" ? "↘" : "–"}
         </text>
       )}
@@ -31,10 +39,14 @@ export interface CollapsibleSectionProps {
   children: any
   badge?: string
   badgeColor?: string
+  theme?: any
 }
 
 export function CollapsibleSection(props: CollapsibleSectionProps) {
-  const [local, rest] = splitProps(props, ["title", "expanded", "onToggle", "children", "badge", "badgeColor"])
+  const [local, rest] = splitProps(props, ["title", "expanded", "onToggle", "children", "badge", "badgeColor", "theme"])
+  const theme = local.theme || {}
+  const textColor = resolveColor(local.expanded ? "text" : "textMuted", theme, local.expanded ? "#cdd6f4" : "#6c7086")
+  const badgeColor = resolveColor(local.badgeColor || "textMuted", theme, "#6c7086")
   return (
     <box {...rest} flexShrink={0} gap={1}>
       <box
@@ -45,11 +57,11 @@ export function CollapsibleSection(props: CollapsibleSectionProps) {
         justifyContent="center"
         paddingBottom={1}
       >
-        <text fg={local.expanded ? "text" : "textMuted"}>
+        <text fg={textColor}>
           {local.expanded ? "▼" : "▶"} {local.title}
         </text>
         {local.badge && (
-          <text fg={local.badgeColor || "textMuted"}>
+          <text fg={badgeColor}>
             {local.badge}
           </text>
         )}
@@ -67,18 +79,21 @@ export interface TTLBarProps {
   percentage: number
   color?: string
   width?: number
+  theme?: any
 }
 
 export function TTLBar(props: TTLBarProps) {
-  const [local] = splitProps(props, ["percentage", "color", "width"])
+  const [local] = splitProps(props, ["percentage", "color", "width", "theme"])
+  const theme = local.theme || {}
   const pct = Math.max(0, Math.min(100, local.percentage))
   const barColor = local.color || (pct < 50 ? "success" : pct < 80 ? "warning" : "error")
+  const resolvedBarColor = resolveColor(barColor, theme, barColor)
   return (
-    <box width={local.width || 20} height={1} backgroundColor="border" flexShrink={0}>
+    <box width={local.width || 20} height={1} backgroundColor={resolveColor("border", theme, "#313244")} flexShrink={0}>
       <box
         width={`${pct}%`}
         height={1}
-        backgroundColor={barColor}
+        backgroundColor={resolvedBarColor}
         flexShrink={0}
       />
     </box>
@@ -90,23 +105,29 @@ export interface CountdownTimerProps {
   format?: "compact" | "verbose" | "ms"
   warningThreshold?: number
   criticalThreshold?: number
+  theme?: any
 }
 
 export function CountdownTimer(props: CountdownTimerProps) {
-  const [local] = splitProps(props, ["ms", "format", "warningThreshold", "criticalThreshold"])
+  const [local] = splitProps(props, ["ms", "format", "warningThreshold", "criticalThreshold", "theme"])
+  const theme = local.theme || {}
   const [time, setTime] = createSignal(local.ms)
+  const startTime = Date.now()
+  const targetTime = startTime + local.ms
 
   createEffect(() => {
     const interval = setInterval(() => {
-      setTime(Math.max(0, local.ms - (Date.now() - (Date.now() - local.ms))))
+      const remaining = Math.max(0, targetTime - Date.now())
+      setTime(remaining)
     }, 1000)
     onCleanup(() => clearInterval(interval))
   })
 
   const color = createMemo(() => {
-    if (time() <= (local.criticalThreshold ?? 30_000)) return "error"
-    if (time() <= (local.warningThreshold ?? 60_000)) return "warning"
-    return "text"
+    const t = time()
+    if (t <= (local.criticalThreshold ?? 30_000)) return resolveColor("error", theme, "#f38ba8")
+    if (t <= (local.warningThreshold ?? 60_000)) return resolveColor("warning", theme, "#fab387")
+    return resolveColor("text", theme, "#cdd6f4")
   })
 
   return (

@@ -272,12 +272,34 @@ export function createCollector(
     setWarmingState(newState)
   }
 
-  function refreshCache() {
+  let refreshCacheScheduled = false
+  let lastRefreshCache = 0
+  const MIN_REFRESH_INTERVAL = 500
+
+  function scheduleRefreshCache() {
+    const now = Date.now()
+    if (now - lastRefreshCache >= MIN_REFRESH_INTERVAL) {
+      doRefreshCache()
+    } else if (!refreshCacheScheduled) {
+      refreshCacheScheduled = true
+      setTimeout(() => {
+        refreshCacheScheduled = false
+        doRefreshCache()
+      }, MIN_REFRESH_INTERVAL - (now - lastRefreshCache))
+    }
+  }
+
+  function doRefreshCache() {
+    lastRefreshCache = Date.now()
     const messages = getMessages()
     const newMetrics = computeCacheMetrics(messages)
     setCacheMetrics(newMetrics)
     setMessageCache(messages)
     setTurnCounter(c => c + 1)
+  }
+
+  function refreshCache() {
+    scheduleRefreshCache()
   }
 
   function handleSessionStatus(event: any) {
@@ -296,6 +318,7 @@ export function createCollector(
   function handleMessageUpdated(event: any) {
     if (event.properties?.info?.sessionID !== sessionId) return
     if (event.properties?.info?.role === "assistant") {
+      console.log("[observability] message.updated for assistant", event.properties.info)
       refreshCache()
     }
   }
@@ -303,17 +326,20 @@ export function createCollector(
   function handlePartUpdated(event: any) {
     if (event.properties?.part?.sessionID !== sessionId) return
     const part = event.properties.part
+    console.log("[observability] message.part.updated", part.type, part.tokens ? "has tokens" : "no tokens")
     if (part.type === "step-finish" && part.tokens) {
       refreshCache()
     }
   }
 
   createEffect(() => {
+    console.log("[observability] Subscribing to events for session:", sessionId)
     const unsubStatus = api.event.on("session.status", handleSessionStatus)
     const unsubMsg = api.event.on("message.updated", handleMessageUpdated)
     const unsubPart = api.event.on("message.part.updated", handlePartUpdated)
 
     onCleanup(() => {
+      console.log("[observability] Cleaning up event subscriptions")
       unsubStatus()
       unsubMsg()
       unsubPart()
@@ -321,6 +347,7 @@ export function createCollector(
   })
 
   createEffect(() => {
+    console.log("[observability] Initial refresh for session:", sessionId)
     refreshWarming()
     refreshCache()
 

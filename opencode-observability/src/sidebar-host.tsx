@@ -63,9 +63,11 @@ export function SidebarHost(props: { sessionId: string; api: any; theme: any }) 
   })
 
   createEffect(() => {
-    if (preferences().section.rememberCollapsed) {
-      setPreferences(prev => ({ ...prev, section: { ...prev.section, collapsed: collapsed() } }))
-      kv.set("observability-preferences", preferences())
+    const c = collapsed()
+    const pref = preferences()
+    if (pref.section.rememberCollapsed && pref.section.collapsed !== c) {
+      setPreferences(prev => ({ ...prev, section: { ...prev.section, collapsed: c } }))
+      kv.set("observability-preferences", { ...pref, section: { ...pref.section, collapsed: c } })
     }
   })
 
