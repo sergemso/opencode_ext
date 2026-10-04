@@ -56,6 +56,12 @@ export function SidebarHost(props: { sessionId: string; api: any; theme: any }) 
   })
 
   createEffect(() => {
+    props.sessionId
+    collector().refreshCache()
+    collector().refreshWarming()
+  })
+
+  createEffect(() => {
     const pref = preferences()
     if (pref.section.rememberCollapsed && pref.section.collapsed !== null) {
       setCollapsed(pref.section.collapsed)

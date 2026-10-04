@@ -315,6 +315,15 @@ export function createCollector(
     }
   }
 
+  function handleSessionChange(event: any) {
+    const newSessionId = event.properties?.sessionID
+    if (newSessionId && newSessionId !== sessionId) {
+      console.log("[observability] Session changed, forcing refresh")
+      refreshWarming()
+      doRefreshCache()
+    }
+  }
+
   function handleMessageUpdated(event: any) {
     if (event.properties?.info?.sessionID !== sessionId) return
     if (event.properties?.info?.role === "assistant") {
@@ -335,12 +344,14 @@ export function createCollector(
   createEffect(() => {
     console.log("[observability] Subscribing to events for session:", sessionId)
     const unsubStatus = api.event.on("session.status", handleSessionStatus)
+    const unsubChange = api.event.on("session.change", handleSessionChange)
     const unsubMsg = api.event.on("message.updated", handleMessageUpdated)
     const unsubPart = api.event.on("message.part.updated", handlePartUpdated)
 
     onCleanup(() => {
       console.log("[observability] Cleaning up event subscriptions")
       unsubStatus()
+      unsubChange()
       unsubMsg()
       unsubPart()
     })
