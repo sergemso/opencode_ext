@@ -1,0 +1,63 @@
+{
+  "name": "opencode-observability",
+  "version": "0.1.0",
+  "description": "OpenCode TUI sidebar plugin for warming and cache observability",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./tui": {
+      "import": "./dist/tui.js",
+      "types": "./dist/tui.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts,.tsx",
+    "prepublishOnly": "npm run build && npm run test && npm run typecheck"
+  },
+  "keywords": [
+    "opencode",
+    "plugin",
+    "tui",
+    "observability",
+    "warming",
+    "cache",
+    "metrics"
+  ],
+  "author": "",
+  "license": "MIT",
+  "peerDependencies": {
+    "@opencode-ai/plugin": ">=1.14.0",
+    "solid-js": ">=1.8.0"
+  },
+  "devDependencies": {
+    "@opencode-ai/plugin": "^1.18.0",
+    "@opentui/core": "^0.5.14",
+    "@opentui/solid": "^0.5.14",
+    "@types/node": "^20.0.0",
+    "solid-js": "^1.8.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0"
+  },
+  "oc-plugin": [
+    "tui"
+  ],
+  "files": [
+    "dist",
+    "observability.config.example.json"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
