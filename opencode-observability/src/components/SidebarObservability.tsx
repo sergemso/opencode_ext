@@ -3,11 +3,20 @@ import type { ObservabilityState, PluginConfig } from "../types"
 import { CollapsibleSection, StatRow, TTLBar, CountdownTimer } from "./StatRow"
 import { formatNumber, formatCost, formatPercentage, getHitRateColor, getWarmingStatusColor, getWarmingStatusLabel } from "../utils/format"
 
+const SEMANTIC_COLORS = new Set([
+  "success", "error", "warning", "info",
+  "text", "textmuted", "text-muted",
+  "border", "background", "backgroundpanel", "background-panel",
+  "primary", "secondary", "accent", "muted"
+])
+
 function resolveColor(theme: any, key: string, fallback: string): string {
   const val = theme?.[key]
   if (!val) return fallback
-  if (val.startsWith("#") || val.startsWith("rgb") || /^[a-z]+$/i.test(val)) return val
-  return fallback
+  if (val.startsWith("#") || val.startsWith("rgb")) return val
+  const lower = key.toLowerCase()
+  if (SEMANTIC_COLORS.has(lower)) return val
+  return val
 }
 
 export interface SidebarObservabilityProps {
@@ -158,7 +167,7 @@ export function SidebarObservability(props: SidebarObservabilityProps) {
                 <StatRow
                   label="Savings"
                   value={formatCost(cache().savings)}
-                  color="success"
+                  color={resolveColor(theme, "success", "#a6e3a1")}
                   theme={theme}
                 />
               )}

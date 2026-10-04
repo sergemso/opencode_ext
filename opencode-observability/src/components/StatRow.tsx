@@ -1,9 +1,18 @@
 import { createSignal, createEffect, onCleanup, createMemo, splitProps } from "solid-js"
 
+const SEMANTIC_COLORS = new Set([
+  "success", "error", "warning", "info",
+  "text", "textmuted", "text-muted",
+  "border", "background", "backgroundpanel", "background-panel",
+  "primary", "secondary", "accent", "muted"
+])
+
 function resolveColor(color: string, theme: any, fallback: string): string {
   if (!color) return fallback
-  if (color.startsWith("#") || color.startsWith("rgb") || /^[a-z]+$/i.test(color)) return color
-  return theme?.[color] || fallback
+  if (color.startsWith("#") || color.startsWith("rgb")) return color
+  const lower = color.toLowerCase()
+  if (SEMANTIC_COLORS.has(lower)) return theme?.[color] || fallback
+  return theme?.[color] || color
 }
 
 export interface StatRowProps {
@@ -23,7 +32,7 @@ export function StatRow(props: StatRowProps) {
       <text fg={resolveColor("textMuted", theme, "#6c7086")} flexShrink={0}>{local.label}</text>
       <text fg={resolveColor(local.color || "text", theme, "#cdd6f4")} flexShrink={0}>{local.value}</text>
       {local.trend && (
-        <text fg={local.trend === "up" ? "success" : local.trend === "down" ? "error" : resolveColor("textMuted", theme, "#6c7086")}>
+        <text fg={local.trend === "up" ? resolveColor("success", theme, "#a6e3a1") : local.trend === "down" ? resolveColor("error", theme, "#f38ba8") : resolveColor("textMuted", theme, "#6c7086")}>
           {local.trend === "up" ? "↗" : local.trend === "down" ? "↘" : "–"}
         </text>
       )}
